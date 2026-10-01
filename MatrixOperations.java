@@ -6,13 +6,14 @@ public class MatrixOperations {
     private int maxNum;
     private double maxValue;
 
-    public MatrixOperations(int row, int column, int maxNum) {
+    public double[][] generateMatrix(int row, int column, int maxNum) {
+        if (row <= 0 || column <= 0 || maxNum <= 0) {
+            throw new IllegalArgumentException("Row, column and maxNum must be greater than 0");
+        }
+
         matrix = new double[row][column];
-
         this.maxNum = maxNum;
-    }
 
-    public double[][] generateMatrix() {
         Random random = new Random();
 
         for (int i = 0; i < row; i++) {
@@ -20,148 +21,143 @@ public class MatrixOperations {
                 matrix[i][j] = random.nextInt(maxNum) + 1;
             }
         }
+        return matrix;
     }
 
     public void printDoubleMatrix(double[][] m) {
-         int row = m.length;
-        int column = m[0].length;
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < column; j++) {
-                System.out.printf("%f.2\t", m[i][j]);
+        for (int i = 0; i < m.length; i++) {
+            for (int j = 0; j < m[i].length; j++) {
+                System.out.printf("%.1f\t", m[i][j]);
             }
             System.out.println();
         }
     }
 
-    public double[][] subtractRowAverage(int[][] m) {
-        int row = m.length;
-        int column = m[0].length;
-         double[][] result = new double[m.length][m[0].length];
-        for (int i = 0; i < row; i++) {
+    public double[][] subtractRowAverage(double[][] m) {
+        double[][] result = new double[m.length][m[0].length];
+
+        for (int i = 0; i < m.length; i++) {
             double sum = 0;
 
-            for (int j = 0; j < column; j++) {
-                sum += matrix[i][j];
+            for (int j = 0; j < m[i].length; j++) {
+                sum += m[i][j];
             }
 
-            double average = sum / column;
+            double average = sum / m[i].length;
 
-            for (int j = 0; j < column; j++) {
-                matrix[i][j] -= average;
+            for (int j = 0; j < m[i].length; j++) {
+                result[i][j] = m[i][j] - average;
             }
         }
+
         return result;
     }
 
-    public void shiftMatrix(int up, int right) {
-        up %= row;
-        right %= column;
+    public void shiftMatrix(double[][] m, int up, int right) {
+        int rows = m.length;
+        int columns = m[0].length;
+
+        up = ((up % rows) + rows) % rows;
+        right = ((right % columns) + columns) % columns;
 
         for (int shift = 0; shift < up; shift++) {
-            double[] firstRow = matrix[0];
+            double[] firstRow = m[0];
 
-            for (int i = 0; i < row - 1; i++) {
-                matrix[i] = matrix[i + 1];
+            for (int i = 0; i < rows - 1; i++) {
+                m[i] = m[i + 1];
             }
-
-            matrix[row - 1] = firstRow;
+            m[rows - 1] = firstRow;
         }
 
         for (int shift = 0; shift < right; shift++) {
-            for (int i = 0; i < row; i++) {
-                double last = matrix[i][column - 1];
-
-                for (int j = column - 1; j > 0; j--) {
-                    matrix[i][j] = matrix[i][j - 1];
-                }
-
-                matrix[i][0] = last;
+            for (int i = 0; i < rows; i++) {
+                double last = m[i][columns - 1];
+                    for (int j = columns - 1; j > 0; j--) {
+                        m[i][j] = m[i][j - 1];
+                    }
+                m[i][0] = last;
             }
         }
     }
 
-    public void maxValueOfMatrix() {
-        maxValue = matrix[0][0];
+    public double maxValueOfMatrix(double[][] m) {
+        maxValue = m[0][0];
 
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < column; j++) {
-                if (matrix[i][j] > maxValue) {
-                    maxValue = matrix[i][j];
+        for (int i = 0; i < m.length; i++) {
+            for (int j = 0; j < m[i].length; j++) {
+                if (m[i][j] > maxValue) {
+                    maxValue = m[i][j];
                 }
             }
         }
 
-        System.out.println("Max value: " + maxValue);
+        return maxValue;
     }
 
-    public double[][] deleteMaxRowsAndColumns(double[][] matrix) {
-        boolean[] rows = new boolean[matrix.length];
-        boolean[] columns = new boolean[matrix[0].length];
+    public double[][] deleteMaxRowsAndColumns(double[][] m) {
+        boolean[] rows = new boolean[m.length];
+        boolean[] columns = new boolean[m[0].length];
 
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < column; j++) {
-                if (matrix[i][j] == maxValue) {
+        for (int i = 0; i < m.length; i++) {
+            for (int j = 0; j < m[i].length; j++) {
+                if (m[i][j] == maxValue) {
                     rows[i] = true;
                     columns[j] = true;
                 }
             }
         }
 
-        int newRow = 0;
-        int newColumn = 0;
+        int newRows = 0;
+        int newColumns = 0;
 
         for (boolean value : rows) {
-            if (!value)
-                newRow++;
+            if (!value) {
+                newRows++;
+            }
         }
 
         for (boolean value : columns) {
-            if (!value)
-                newColumn++;
+            if (!value) {
+                newColumns++;
+            }
         }
 
-        double[][] result = new double[newRow][newColumn];
+        double[][] result = new double[newRows][newColumns];
 
         int r = 0;
 
-        for (int i = 0; i < row; i++) {
-            if (rows[i])
+        for (int i = 0; i < m.length; i++) {
+            if (rows[i]) {
                 continue;
+            }
 
             int c = 0;
 
-            for (int j = 0; j < column; j++) {
-                if (columns[j])
+            for (int j = 0; j < m[i].length; j++) {
+                if (columns[j]) {
                     continue;
+                }
 
-                result[r][c++] = matrix[i][j];
+                result[r][c++] = m[i][j];
             }
-
             r++;
         }
 
         return result;
     }
 
-    public void rotate90Clockwise() {
-        if (row != column) {
-            return;
-        }
+    public double[][] rotate90Clockwise(double[][] m) {
+        int rows = m.length;
+        int columns = m[0].length;
 
-        for (int i = 0; i < row; i++) {
-            for (int j = i + 1; j < column; j++) {
-                double temp = matrix[i][j];
-                matrix[i][j] = matrix[j][i];
-                matrix[j][i] = temp;
+        double[][] result = new double[columns][rows];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                result[j][rows - 1 - i] = m[i][j];
             }
         }
 
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < column / 2; j++) {
-                double temp = matrix[i][j];
-                matrix[i][j] = matrix[i][column - 1 - j];
-                matrix[i][column - 1 - j] = temp;
-            }
-        }
+        return result;
     }
 }
